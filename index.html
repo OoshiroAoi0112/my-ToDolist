@@ -31,28 +31,32 @@
 </header>
 <body>
   <div class="list">
-    <div class="list-name">
-      <label>リスト名：
-        <input 
-        type="text"
-        class="list-write"
-        maxlength="20"
-        placeholder="ここにリスト名を記入"
-        spellcheck="false"
-        autocomplete="off">
-      </label>
+    <div class="list-header">
+      <div class="list-name">
+        <label>リスト名：
+          <input 
+          type="text"
+          class="list-write"
+          maxlength="20"
+          placeholder="ここにリスト名を記入"
+          spellcheck="false"
+          autocomplete="off">
+        </label>
+        <div class="list-achv">
+          <h3>達成度：<span class="achv-num">0%</span></h3>
+        </div>
+      </div>
     </div>
-    <div class="list-achv">
-
-    </div>
-    <div class="task-crt">
-
-    </div>
-    <div class="list-clear">
-
-    </div>
-    <div class="list-delete">
-
+    <div class="list-button">
+      <div class="task-crt">
+        <button type="button" class="task-crt">タスクを追加</button>
+      </div>
+      <div class="list-clear">
+        <button type="button" class="list-clear">空にする</button>
+      </div>
+      <div class="list-delete">
+        <button type="button" class="list-delete">リストを削除</button>
+      </div>
     </div>
   </div>
 </body>
