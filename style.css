@@ -53,3 +53,72 @@ h1{
 #list-button{
     margin: 20px 0px;
 }
+
+/* ----- ボディ設定 ----- */
+body{
+    /*ヘッダーに隠れないようにするため*/
+    padding-top: 70px;
+}
+
+/* ----- リスト設定 ----- */
+#list-area{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.list{
+    width: 100%;
+    padding: 6px;
+    background-color: rgb(243, 130, 222);
+    box-sizing: border-box;
+}
+
+.list-header{
+    min-height: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-text-write{
+    background-color: #fff;
+}
+
+.list-button{
+    display: flex;
+    justify-content: space-between;
+}
+
+.task-crt{
+    
+}
+
+.list-clear{
+    
+}
+
+.list-delete{
+    
+}
+
+.task{
+    width: 100%;
+    padding: 6px;
+    background-color: rgb(243, 130, 222);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.task-main{
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.task-text-write{
+    background-color: #fff;
+}
