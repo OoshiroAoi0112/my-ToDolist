@@ -57,9 +57,9 @@ listArea.addEventListener("click", (e) => {
   if (button.classList.contains("task-crt-button")) {
     TaskCreate(list); // ← タスク生成は別関数
   } else if (button.classList.contains("list-clear-button")) {
-    clearList(list);
+    ClearList(list);
   } else if (button.classList.contains("list-delete-button")) {
-    deleteList(list);
+    DeleteList(list);
   } else if (button.classList.contains("task-delete-button")) {
     button.closest("li.task")?.remove();
   }
@@ -151,6 +151,42 @@ function TaskCreate(list)
   ul.appendChild(li);
   // 達成度を更新
   updateAchv(list);
+}
+
+
+// リスト内を空にする
+function ClearList(list)
+{
+  // listないある.task-listを探す
+  const ul = list.querySelector(".task-list");
+  if(!ul) return;
+
+  // 中身を空にする
+  ul.innerHTML = "";
+
+  // 達成度をリセット
+  updateAchv(list);
+}
+
+// リストを削除する
+function DeleteList(list)
+{
+  // リスト内のタスクの数を数える
+  const taskCount = list.querySelectorAll(".task-list > li.task").length;
+
+  // タスクがあるなら確認ダイアログ
+  if(taskCount > 0)
+  {
+    const ok = confirm(`このリストには ${taskCount}件のタスクがあります。本当に削除しますか？`);
+    if(!ok) return;
+  }
+
+  // リストを削除
+  list.remove();
+
+  // リストを追加ボタンへフォーカス
+  const createBtn = document.getElementById("list-create");
+  if(createBtn) createBtn.focus();
 }
 
 //----------------------------------------------------------//
