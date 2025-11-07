@@ -43,7 +43,7 @@ const listCreateBtn = document.getElementById("list-create");
 
 listCreateBtn.addEventListener("click", ListCreate, false);
 
-// イベント委譲
+// イベント委譲（クリック）
 listArea.addEventListener("click", (e) => {
   const button = e.target.closest("button");
   // ボタン(<button>)かどうかを判定
@@ -65,6 +65,19 @@ listArea.addEventListener("click", (e) => {
   }
 }, false);
 
+// イベント委譲（値(state)の変更）
+listArea.addEventListener("change", (e) => {
+  // チェックボックス以外の変更は無視
+  const checkbox = e.target.closest('input[type="checkbox"].task-check-button');
+  if(!checkbox) return;
+  
+  // このチェックボックスが属しているリストを特定
+  const list = checkbox.closest(".list");
+  if(!list) return;
+
+  // 達成度を更新
+  UpdateAchv(list);
+}, false);
 
 //----------------------------------------------------------//
 
@@ -150,7 +163,7 @@ function TaskCreate(list)
   // 完成したliをulに追加
   ul.appendChild(li);
   // 達成度を更新
-  updateAchv(list);
+  UpdateAchv(list);
 }
 
 
@@ -165,7 +178,7 @@ function ClearList(list)
   ul.innerHTML = "";
 
   // 達成度をリセット
-  updateAchv(list);
+  UpdateAchv(list);
 }
 
 // リストを削除する
@@ -187,6 +200,37 @@ function DeleteList(list)
   // リストを追加ボタンへフォーカス
   const createBtn = document.getElementById("list-create");
   if(createBtn) createBtn.focus();
+}
+
+function UpdateAchv(list)
+{
+  // リスト内の要素を取得 //
+  // list 内の .task-list を取得
+  const ul = list.querySelector(".task-list");
+  // list 内の .achv-num を取得
+  const span = list.querySelector(".achv-num");
+
+  // どちらかが欠けている構造の場合はスキップ
+  if(!ul || !span) return;
+
+  // 総タスク数
+  const total = ul.querySelectorAll("li.task").length;
+
+  // 0件なら 0% 表示で終了
+  if(total === 0)
+  {
+    span.textContent = "0%";
+    return;
+  }
+
+  // 完了（チェック済み）数
+  const done = ul.querySelectorAll('input.task-check-button:checked').length;
+
+  // パーセント = (完了 / 総数) * 100 を四捨五入
+  const percent = Math.round((done / total) * 100);
+
+  // 表示を更新
+  span.textContent = `${percent}%`;
 }
 
 //----------------------------------------------------------//
