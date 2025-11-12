@@ -12,7 +12,7 @@
 const listArea = document.getElementById("list-area");
 // タスクの追加、リストのリセット、リストの削除ボタン
 // HTMLから id=list-create の要素検索・取得
-const listCreateBtn = document.getElementById("list-create");
+const listCreateBtn = document.getElementById("list-create-button");
 
 //----------------------------------------------------------//
 

@@ -1,12 +1,26 @@
 @charset "utf-8";
 
+/* フォントの登録と設定 */
+/* @font-face : 外部ファイルから TTF・WOFF を読み込む + 登録 */
+@font-face {
+    /* フォントに名前を付ける */
+    font-family: "Marumoji";
+    /* フォントファイルのパスとその形式を指定 */
+    src: url("font/KTEGAKI.ttf") format("truetype");
+    /* 文字の太さを指定 */
+    font-weight: normal;
+    /* 文字のスタイル（斜体）を指定 */
+    font-style: normal;
+}
+
+
 /* margin ,paddingはデフォルトの設定があるときがある
    そのため自分で初期化する必要がある
    一番最初に書くことで全体に反映することができる */
 
 /*  初期化  */
 *{
-    margin: 0;
+    margin: 0 2px;
     padding: 0;
 }
 /* html全体設定 */
@@ -50,14 +64,30 @@ h1{
     margin: 10px 30px;
 }
 
-#list-button{
+#list-create-button{
     margin: 20px 0px;
+    background-color: #faa;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+
+#list-create-button:hover{
+    background-color: #d88;
 }
 
 /* ----- ボディ設定 ----- */
 body{
     /*ヘッダーに隠れないようにするため*/
     padding-top: 70px;
+    /* フォント変更 */
+    font-family: "Marumoji", sans-serif;
 }
 
 /* ----- リスト設定 ----- */
@@ -71,7 +101,8 @@ body{
 .list{
     width: 100%;
     padding: 6px;
-    background-color: rgb(243, 130, 222);
+    background-color: #82E6FA;
+    border-radius: 7px;
     box-sizing: border-box;
 }
 
@@ -90,16 +121,52 @@ body{
     justify-content: space-between;
 }
 
-.task-crt{
-    
+.task-crt-button{
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 2px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+.task-crt-button:hover{
+    background-color: #AAA;
 }
 
-.list-clear{
-    
+.list-clear-button{
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 2px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+.list-clear-button:hover{
+    background-color: #AAA;
 }
 
-.list-delete{
-    
+.list-delete-button{
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 2px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+.list-delete-button:hover{
+    background-color: #AAA;
 }
 
 .task{
@@ -111,6 +178,7 @@ body{
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
+    border-radius: 7px;
 }
 
 .task-main{
@@ -121,4 +189,20 @@ body{
 
 .task-text-write{
     background-color: #fff;
+}
+
+.task-delete-button{
+    background-color: #fff;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 2px 2px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+.task-delete-button:hover{
+    background-color: #AAA;
 }
