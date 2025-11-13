@@ -169,12 +169,15 @@ body{
     background-color: #AAA;
 }
 
+/* ----- タスク設定 ----- */
 .task{
     width: 100%;
     padding: 6px;
     background-color: rgb(243, 130, 222);
 
     display: flex;
+    /* transition : プロパティ名 時間 アニメーションタイプ 遅延 */
+    transition: background-color 0.5s ease;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
@@ -205,4 +208,18 @@ body{
 }
 .task-delete-button:hover{
     background-color: #AAA;
+}
+
+.task.done{
+    background-color: #afa;
+}
+
+/* ----- リスト・タスクの入力設定 ----- */
+.task-text-label,
+.list-text-label{
+    font-family: "Marumoji", sans-serif;
+    font-size: 16px;
+    padding: 6px 10px;
+    display: inline-block;
+    cursor: text;
 }

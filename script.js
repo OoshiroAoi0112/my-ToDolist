@@ -45,6 +45,42 @@ listCreateBtn.addEventListener("click", ListCreate, false);
 
 // イベント委譲（クリック）
 listArea.addEventListener("click", (e) => {
+  // リスト名・タスク名のラベルがクリックされたか判定
+  const label = e.target.closest(".list-text-label, .task-text-label");
+  if(label)
+  {
+    const currentText = label.textContent;
+
+    // 新しく input を作る
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentText;
+    input.spellcheck = false;
+    input.autocomplete = "off";
+
+    // どっち用のラベル化でクラスを変える
+    if(label.classList.contains("list-text-label"))
+    {
+      input.classList.add("list-text-write");
+      input.maxLength = 20;
+    }
+    else
+    {
+      input.classList.add("task-text-write");
+      input.maxLength = 30;
+    }
+
+    // span → input に入れ替え
+    label.replaceWith(input);
+
+    // フォーカスして中心全部選択
+    input.focus();
+    input.select();
+
+    return;
+  }
+
+
   const button = e.target.closest("button");
   // ボタン(<button>)かどうかを判定
   if (!button) return;
@@ -67,10 +103,52 @@ listArea.addEventListener("click", (e) => {
 
 // イベント委譲（値(state)の変更）
 listArea.addEventListener("change", (e) => {
-  // チェックボックス以外の変更は無視
+  // インプットテキストの情報取得
+  const textInput = e.target.closest("input.task-text-write, input.list-text-write");
+  if(textInput)
+  {
+    // 文字列の切り取り
+    const value = textInput.value.trim();
+    // 文字列があることを確認
+    if(value === "") return;
+    {
+      // span 要素の作成と文字列の代入
+      const span = document.createElement("span");
+      // 作成した span 要素にクラスを付与
+      span.className = textInput.classList.contains("task-text-write")
+      ? "task-text-label"
+      : "list-text-label";
+      // span のテキスト要素に文字列を代入
+      span.textContent = value;
+
+      // input → span に置き換え
+      textInput.replaceWith(span);
+
+      // 他の処理にはいかない
+      return;
+    }
+  }
+
+  // チェックボックスの情報取得
   const checkbox = e.target.closest('input[type="checkbox"].task-check-button');
-  if(!checkbox) return;
-  
+
+  // チェックが押されたタスクを取得とクラスの付与
+  const task = checkbox.closest("li.task");
+  if(task)
+  {
+    // チェックボックスの状態を確認
+    if(checkbox.checked)
+    {
+      // チェックボックスが true ならクラスに done を追加
+      task.classList.add("done");
+    }
+    else
+    {
+      // チェックボックスが false ならクラスから done を削除
+      task.classList.remove("done");
+    }
+  }
+
   // このチェックボックスが属しているリストを特定
   const list = checkbox.closest(".list");
   if(!list) return;
@@ -174,6 +252,14 @@ function ClearList(list)
   const ul = list.querySelector(".task-list");
   if(!ul) return;
 
+  const taskCount = list.querySelectorAll(".task-list > li.task").length;
+
+  if(taskCount > 0)
+  {
+    const ok = confirm(`このリストには ${taskCount}件のタスクがあります。本当に空にしますか？`);
+    if(!ok) return;
+  }
+
   // 中身を空にする
   ul.innerHTML = "";
 
@@ -202,6 +288,7 @@ function DeleteList(list)
   if(createBtn) createBtn.focus();
 }
 
+// 達成度を更新する
 function UpdateAchv(list)
 {
   // リスト内の要素を取得 //
