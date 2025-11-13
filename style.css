@@ -117,6 +117,7 @@ body{
 }
 
 .list-button{
+    margin: 5px;
     display: flex;
     justify-content: space-between;
 }
@@ -214,6 +215,13 @@ body{
     background-color: #afa;
 }
 
+.task-check-button{
+    width: 14px;
+    height: 14px;
+    accent-color: #00F;
+    cursor: pointer;
+}
+
 /* ----- リスト・タスクの入力設定 ----- */
 .task-text-label,
 .list-text-label{
@@ -222,4 +230,70 @@ body{
     padding: 6px 10px;
     display: inline-block;
     cursor: text;
+}
+
+/* ----- チェックボックスの設定 ----- */
+.round-check input[type="checkbox"]{
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.round-check .circle{
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #FFF;
+    border: 2px solid #00F;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    cursor: pointer;
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.round-check input[type="checkbox"]:checked + .circle{
+    background-color: #00A;
+    border-color: #00A;
+}
+
+.round-check .circle::after{
+    content: "";
+    position: absolute;
+    width: 4px;
+    height: 8px;
+
+    border-right: 3px solid #AAA;
+    border-bottom: 3px solid #AAA;
+
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -20%) rotate(45deg);
+
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.round-check input[type="checkbox"]:checked + .circle::after{
+
+    content: "";
+    position: absolute;
+    width: 5px;
+    height: 10px;
+
+    border-right: 3px solid #FFF;
+    border-bottom: 3px solid #FFF;
+
+    left: 50%;
+    top: 10%;
+    transform: translate(-50%, -20%) rotate(45deg);
+
+    opacity: 1;
+    transition: opacity 0.2s ease;
 }

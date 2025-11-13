@@ -217,7 +217,10 @@ function TaskCreate(list)
   `
   <div class="task-main">
     <div class="task-check">
-      <input type="checkbox" class="task-check-button">
+      <label class="round-check">
+        <input type="checkbox" class="task-check-button">
+        <span class="circle"></span>
+      </label>
     </div>
     <div class="task-text">
       <label>
