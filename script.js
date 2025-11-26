@@ -2,7 +2,22 @@
 "use strict";
 
 ///// 変数定義 /////
-
+/// 効果音 ///
+// クリック
+const clickSound = new Audio("sound/cursor.mp3");
+clickSound.volume = 0.3;
+// リストを空にする音
+const clearSound = new Audio("sound/clear.mp3");
+clickSound.volume = 0.7;
+// 達成度が100％になったときの音
+const taskcmpSound = new Audio("sound/taskcmp.mp3");
+taskcmpSound.volume = 0.5;
+// 警告文を表示させるときの音
+const warningSound = new Audio("sound/warning.mp3");
+warningSound.volume = 0.7;
+// タスクを削除するときの音
+const taskdltSound = new Audio("sound/taskdelete.mp3");
+taskdltSound.volume = 0.5;
 // ☆ 学習メモ ☆　//
 //                     const : 再代入不可の変数を作成
 // document.getElementById() : HTML要素を取得 (今回はid)
@@ -80,7 +95,6 @@ listArea.addEventListener("click", (e) => {
     return;
   }
 
-
   const button = e.target.closest("button");
   // ボタン(<button>)かどうかを判定
   if (!button) return;
@@ -97,10 +111,36 @@ listArea.addEventListener("click", (e) => {
   } else if (button.classList.contains("list-delete-button")) {
     DeleteList(list);
   } else if (button.classList.contains("task-delete-button")) {
-    button.closest("li.task")?.remove();
+    const task = e.target.closest("li.task");
+    const list = task.closest(".list");
+    DeleteTask(list, task);
   }
 }, false);
 
+
+document.addEventListener("click", (e) =>
+{
+  // 効果音
+  playSound(clickSound);
+  
+  // エフェクト要素の作成
+  const effect = document.createElement("span");
+  effect.className = "click-effect";
+
+  // クリックした位置をセット（画面上の座標）
+  effect.style.left = e.pageX + "px";
+  effect.style.top = e.pageY + "px";
+
+  // 画面に追加
+  document.body.appendChild(effect);
+
+  // アニメーションが終わったら自動で消す
+  effect.addEventListener("animationend", () =>
+  {
+    effect.remove();
+  });
+});
+  
 // イベント委譲（値(state)の変更）
 listArea.addEventListener("change", (e) => {
   // インプットテキストの情報取得
@@ -249,7 +289,7 @@ function TaskCreate(list)
 
 
 // リスト内を空にする
-function ClearList(list)
+async function ClearList(list)
 {
   // listないある.task-listを探す
   const ul = list.querySelector(".task-list");
@@ -259,10 +299,12 @@ function ClearList(list)
 
   if(taskCount > 0)
   {
-    const ok = confirm(`このリストには ${taskCount}件のタスクがあります。本当に空にしますか？`);
+    playSound(warningSound);
+    const ok = await ShowModal(`このリストには ${taskCount}件のタスクがあります。本当に空にしますか？`);
     if(!ok) return;
+    playSound(clearSound);
   }
-
+  
   // 中身を空にする
   ul.innerHTML = "";
 
@@ -271,7 +313,7 @@ function ClearList(list)
 }
 
 // リストを削除する
-function DeleteList(list)
+async function DeleteList(list)
 {
   // リスト内のタスクの数を数える
   const taskCount = list.querySelectorAll(".task-list > li.task").length;
@@ -279,8 +321,10 @@ function DeleteList(list)
   // タスクがあるなら確認ダイアログ
   if(taskCount > 0)
   {
-    const ok = confirm(`このリストには ${taskCount}件のタスクがあります。本当に削除しますか？`);
+    playSound(warningSound);
+    const ok = await ShowModal(`このリストには ${taskCount}件のタスクがあります。本当に空にしますか？`);
     if(!ok) return;
+    playSound(taskdltSound);
   }
 
   // リストを削除
@@ -289,6 +333,24 @@ function DeleteList(list)
   // リストを追加ボタンへフォーカス
   const createBtn = document.getElementById("list-create");
   if(createBtn) createBtn.focus();
+}
+
+async function DeleteTask(list, task)
+{
+  // タスクがあるかチェック
+  if(!task) return;
+  // 警告音
+  playSound(warningSound);
+  // 警告文
+  const ok = await ShowModal(`このタスクを削除しますか？`);
+  // ok ではないなら何もしない
+  if(!ok) return;
+  // 削除音
+  playSound(taskdltSound);
+  // 引数に渡された task の削除
+  task.remove();
+  // 達成度更新
+  UpdateAchv(list);
 }
 
 // 達成度を更新する
@@ -319,8 +381,63 @@ function UpdateAchv(list)
   // パーセント = (完了 / 総数) * 100 を四捨五入
   const percent = Math.round((done / total) * 100);
 
+  if(percent === 100) playSound(taskcmpSound);
+
   // 表示を更新
   span.textContent = `${percent}%`;
+}
+
+
+// 効果音を鳴らす用
+function playSound(audio)
+{
+  if(!audio) return;
+
+  // 元データをクローンして毎回あたらしいAudioとして鳴らす
+  const s = audio.cloneNode();
+  s.volume = audio.volume;
+
+  // 再生
+  s.play().catch(()=>{});
+}
+
+// モーダルによる警告文の表示
+function ShowModal(message)
+{
+  return new Promise(resolve => {
+    const overlay = document.getElementById("modal-overlay");
+    const boxMsg  = overlay.querySelector(".modal-message");
+    const okBtn   = overlay.querySelector(".modal-ok");
+    const cancelBtn  = overlay.querySelector(".modal-cancel");
+
+    // メッセージをセット
+    boxMsg.textContent = message;
+
+    // 表示
+    overlay.classList.remove("hidden");
+
+    // OK
+    const onOk = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    // キャンセル
+    const onCancel = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    // 後処理
+    function cleanup(){
+      okBtn.removeEventListener("click", onOk);
+      cancelBtn.removeEventListener("click", onCancel);
+      overlay.classList.add("hidden");
+    }
+
+    okBtn.addEventListener("click", onOk);
+    cancelBtn.addEventListener("click", onCancel);
+  });
 }
 
 //----------------------------------------------------------//

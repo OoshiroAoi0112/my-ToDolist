@@ -139,8 +139,8 @@ body{
 }
 
 .list-clear-button{
-    background-color: #fff;
-    color: #000;
+    background-color: #FFF;
+    color: #F00;
     border: none;
     border-radius: 5px;
     padding: 2px 2px;
@@ -151,12 +151,12 @@ body{
     font-family: "Marumoji", sans-serif;
 }
 .list-clear-button:hover{
-    background-color: #AAA;
+    background-color: #A44;
 }
 
 .list-delete-button{
-    background-color: #fff;
-    color: #000;
+    background-color: #FFF;
+    color: #F00;
     border: none;
     border-radius: 5px;
     padding: 2px 2px;
@@ -296,4 +296,127 @@ body{
 
     opacity: 1;
     transition: opacity 0.2s ease;
+}
+
+/* エフェクト */
+.click-effect{
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #00ff7f;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.7;
+    pointer-events: none;
+    animation: clickRipple 0.5s ease-out;
+}
+
+@keyframes clickRipple{
+    to{
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* モーダル */
+.modal-overlay{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-box{
+    background-color: #fff;
+    color: #F00;
+    font-size: 24px;
+    background: fff;
+    padding: 20px;
+    border-radius: 10px;
+    min-width: 260px;
+    max-width: 400px;
+    text-align: center;;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
+}
+
+.modal-buttons{
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.hidden{
+    display: none;
+}
+
+/* メディアクエリ、レスポンシブ対応 */
+@media (max-width: 900px) {
+
+    #list-area{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .container{
+        padding: 0 16px;
+    }
+
+    h1{
+        font-size: 2.0rem;
+    }
+
+    #list-create-button{
+        font-size: 20px;
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    html{
+        font-size: 14px;  /* 文字全体を少し小さく */
+    }
+
+    .header{
+        height: 60px;
+    }
+
+    body{
+        padding-top: 60px; /* ヘッダー高さと合わせる */
+    }
+
+    #list-area{
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .container{
+        padding: 0 10px;
+    }
+
+    #title{
+        margin: 8px 10px;
+        font-size: 1.8rem;
+    }
+
+    #list-create-button{
+        font-size: 18px;
+        padding: 5px 8px;
+    }
+
+    .task{
+        padding: 4px;
+    }
+
+    .task-text-label,
+    .list-text-label{
+        font-size: 14px;
+    }
 }
