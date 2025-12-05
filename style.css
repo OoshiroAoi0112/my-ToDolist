@@ -42,6 +42,8 @@ h1{
     position: fixed;
     /* 画面上部からの表示設定　値は上部からの距離を示す */
     top: 0;
+    /* 一番手前に来るように描画を設定 */
+    z-index: 1000;
 }
 
 .container{
@@ -80,6 +82,25 @@ h1{
 
 #list-create-button:hover{
     background-color: #d88;
+}
+
+#all-delete-button{
+    margin: 20px 0px;
+    background-color: #a00;
+    color: #aaa;
+    border: none;
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    font-family: "Marumoji", sans-serif;
+}
+
+#all-delete-button:hover
+{
+    background-color: #400;
 }
 
 /* ----- ボディ設定 ----- */

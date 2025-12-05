@@ -2,6 +2,8 @@
 "use strict";
 
 ///// 変数定義 /////
+let isLoading = false;
+let draggingTask = null;
 /// 効果音 ///
 // クリック
 const clickSound = new Audio("sound/cursor.mp3");
@@ -28,6 +30,9 @@ const listArea = document.getElementById("list-area");
 // タスクの追加、リストのリセット、リストの削除ボタン
 // HTMLから id=list-create の要素検索・取得
 const listCreateBtn = document.getElementById("list-create-button");
+// 現在あるリストをすべて削除
+// HTMLから id=all-delete-button の要素検索・取得
+const allDeleteBtn = document.getElementById("all-delete-button");
 
 //----------------------------------------------------------//
 
@@ -56,7 +61,13 @@ const listCreateBtn = document.getElementById("list-create-button");
 //               {} : 中には実行したい関数の処理を書き込む
 //            false : 上記参照
 
-listCreateBtn.addEventListener("click", ListCreate, false);
+listCreateBtn.addEventListener("click", () => {
+  ListCreate();
+}, false);
+
+allDeleteBtn.addEventListener("click", () => {
+  DeleteAllLists();
+}, false);
 
 // イベント委譲（クリック）
 listArea.addEventListener("click", (e) => {
@@ -84,6 +95,12 @@ listArea.addEventListener("click", (e) => {
       input.classList.add("task-text-write");
       input.maxLength = 30;
     }
+
+    // ★ ここを追加：フォーカスが外れたら必ず change を発火させる
+    input.addEventListener("blur", () => {
+      const ev = new Event("change", { bubbles: true });
+      input.dispatchEvent(ev);
+    });
 
     // span → input に入れ替え
     label.replaceWith(input);
@@ -117,6 +134,38 @@ listArea.addEventListener("click", (e) => {
   }
 }, false);
 
+// イベント委譲（ドラッグ＆ドロップ）
+listArea.addEventListener("dragstart", (e) => {
+  const task = e.target.closest("li.task");
+  if(!task) return;
+
+  // ドラッグしているタスクを記録
+  draggingTask = task;
+
+  // 一部ブラウザ用
+  if(e.dataTransfer)
+  {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", "");
+  }
+}, false);
+
+listArea.addEventListener("dragover", (e) => {
+  // デフォルトのドロップ禁止を無効化する
+  if(!draggingTask) return;
+
+  const task = e.target.closest("li.task");
+  if(!task) return;
+
+  const ul = task.closest(".task-list");
+  if(!ul) return;
+
+  // 同じリスト内のときは許可
+  const draggingUl = draggingTask.closest(".task-list");
+  if(draggingUl !== ul) return;
+
+  e.preventDefault();
+}, false);
 
 document.addEventListener("click", (e) =>
 {
@@ -147,26 +196,32 @@ listArea.addEventListener("change", (e) => {
   const textInput = e.target.closest("input.task-text-write, input.list-text-write");
   if(textInput)
   {
+    // タスクかリストか判定
+    const isTask = textInput.classList.contains("task-text-write");
     // 文字列の切り取り
-    const value = textInput.value.trim();
+    let value = textInput.value.trim();
     // 文字列があることを確認
-    if(value === "") return;
+    if(value === "")
     {
-      // span 要素の作成と文字列の代入
-      const span = document.createElement("span");
-      // 作成した span 要素にクラスを付与
-      span.className = textInput.classList.contains("task-text-write")
-      ? "task-text-label"
-      : "list-text-label";
-      // span のテキスト要素に文字列を代入
-      span.textContent = value;
-
-      // input → span に置き換え
-      textInput.replaceWith(span);
-
-      // 他の処理にはいかない
-      return;
+      value = isTask
+      ? "タスク名を入力してください"
+      : "リスト名を入力してください";
     }
+    // span 要素の作成と文字列の代入
+    const span = document.createElement("span");
+    // 作成した span 要素にクラスを付与
+    span.className = textInput.classList.contains("task-text-write")
+    ? "task-text-label"
+    : "list-text-label";
+    // span のテキスト要素に文字列を代入
+    span.textContent = value;
+
+    // input → span に置き換え
+    textInput.replaceWith(span);
+
+    SaveAll();
+    // 他の処理にはいかない
+    return;
   }
 
   // チェックボックスの情報取得
@@ -195,6 +250,53 @@ listArea.addEventListener("change", (e) => {
 
   // 達成度を更新
   UpdateAchv(list);
+  SaveAll();
+}, false);
+
+listArea.addEventListener("drop", (e) => {
+  if(!draggingTask) return;
+
+  const targetTask = e.target.closest("li.task");
+  if(!targetTask) return;
+
+  const ul = targetTask.closest(".task-list");
+  if(!ul) return;
+
+  const draggingUl = draggingTask.closest(".task-list");
+  if(draggingUl !== ul) return;
+
+  if(draggingTask === targetTask) return;
+
+  const tasks = Array.from(ul.querySelectorAll("li.task"));
+  const fromIndex = tasks.indexOf(draggingTask);
+  const toIndex   = tasks.indexOf(targetTask);
+
+  if(fromIndex < 0 || toIndex < 0) return;
+
+  if(fromIndex < toIndex)
+  {
+    ul.insertBefore(draggingTask, targetTask.nextSibling);
+  }
+  else
+  {
+    ul.insertBefore(draggingTask, targetTask);
+  }
+
+  const list = ul.closest(".list");
+  if(list)
+  {
+    UpdateAchv(list);
+  }
+
+  SaveAll();
+
+  draggingTask = null;
+
+  e.preventDefault();
+}, false);
+
+listArea.addEventListener("dragend", () => {
+  draggingTask = null;
 }, false);
 
 //----------------------------------------------------------//
@@ -202,7 +304,7 @@ listArea.addEventListener("change", (e) => {
 ///// 関数定義 /////
 
 // リスト追加関数
-function ListCreate()
+function ListCreate(title = "")
 {
     // JSで新しく<div>要素を作成し、その要素をlistContainerという変数に代入している
     const listContainer = document.createElement("div");
@@ -241,17 +343,75 @@ function ListCreate()
 
     // HTMLのどこに追加するかを決める
     document.getElementById("list-area").appendChild(listContainer);
+
+    // 復元時にタイトルを反映
+    const titleInput = listContainer.querySelector(".list-text-write");
+    if(titleInput)
+    {
+      if(title !== "")
+      {
+        const span = document.createElement("span");
+        span.className = "list-text-label";
+        span.textContent = title;
+        titleInput.replaceWith(span);
+      }
+      else
+      {
+        titleInput.value = "";
+      }
+    }
+
+    SaveAll();
+    return listContainer;
+}
+
+async function DeleteAllLists()
+{
+  // リストが一つもなければ終了
+  const listArea = document.getElementById("list-area");
+  if(!listArea) return;
+
+  const list = listArea.querySelectorAll(".list");
+  const count = list.length;
+
+  // 
+  if(count === 0)
+  {
+    return;
+  }
+
+  // 確認用ダイアログ
+  playSound(warningSound);
+  const ok = await ShowModal(`現在${count} 件のリストがあります。本当に全て削除しますか？`);
+  if(!ok) return;
+  
+  // 効果音
+  playSound(taskdltSound);
+
+  // すべてのリストを削除
+  list.forEach(list => list.remove());
+
+  const createBtn = document.getElementById("list-create-button");
+  if(createBtn) createBtn.focus();
+
+  // 削除後保存
+  SaveAll();
 }
 
 // タスク追加関数
-function TaskCreate(list)
+function TaskCreate(list, text = "")
 {
   // ul class = "task-list"を探す
   const ul = list.querySelector(".task-list");
   if(!ul) return;
+
   // JSで新しく<li>要素を作成
   const li = document.createElement("li");
   li.classList.add("task");
+
+  // ドラッグ可能にする
+  li.draggable = true;
+
   // 実行したいHTML分を変数にまとめて入れる
   li.innerHTML =
   `
@@ -283,8 +443,29 @@ function TaskCreate(list)
 
   // 完成したliをulに追加
   ul.appendChild(li);
+
+  // 復元時にタスク名を追加
+  const taskInput = li.querySelector(".task-text-write");
+  if(taskInput)
+  {
+    if(text !== "")
+      {
+        const span = document.createElement("span");
+        span.className = "task-text-label";
+        span.textContent = text;
+        taskInput.replaceWith(span);
+      }
+      else
+      {
+        taskInput.value = "";
+      }
+  }
+
   // 達成度を更新
   UpdateAchv(list);
+  SaveAll();
+
+  return li;
 }
 
 
@@ -310,6 +491,7 @@ async function ClearList(list)
 
   // 達成度をリセット
   UpdateAchv(list);
+  SaveAll();
 }
 
 // リストを削除する
@@ -333,6 +515,7 @@ async function DeleteList(list)
   // リストを追加ボタンへフォーカス
   const createBtn = document.getElementById("list-create");
   if(createBtn) createBtn.focus();
+  SaveAll();
 }
 
 async function DeleteTask(list, task)
@@ -351,6 +534,7 @@ async function DeleteTask(list, task)
   task.remove();
   // 達成度更新
   UpdateAchv(list);
+  SaveAll();
 }
 
 // 達成度を更新する
@@ -441,3 +625,166 @@ function ShowModal(message)
 }
 
 //----------------------------------------------------------//
+
+// 保存機能
+const STORAGE_KEY = "todo-data";
+
+// すべてのリストを localStorage に保存する
+function SaveAll()
+{
+  if(isLoading)
+  {
+    return;
+  }
+
+  const listArea = document.getElementById("list-area");
+  if(!listArea) return;
+  
+  // #list-area の中にある .list を全部集める
+  const listElems = listArea.querySelectorAll(".list");
+
+  const allData = [];
+
+  listElems.forEach(listEl => {
+    // リスト名取得
+    let title = "";
+
+    // ラベル表示型
+    const titleLabel = listEl.querySelector(".list-text-label");
+    if(titleLabel)
+    {
+      title = titleLabel.textContent.trim();
+    }
+
+    // 
+    const titleInput = listEl.querySelector(".list-text-write");
+    if(!title && titleInput)
+    {
+      if("value" in titleInput)
+      {
+        title = titleInput.value.trim();
+      }
+      else
+      {
+        title = titleInput.textContent.trim();
+      }
+    }
+
+    // タスク一覧の取得
+    const tasks = [];
+
+    const taskElems = listEl.querySelectorAll(".task-list > li.task, li.task");
+
+    taskElems.forEach(taskEl => {
+      let text = "";
+
+      const textLabel = taskEl.querySelector(".task-text-label");
+      if(textLabel)
+      {
+        text = textLabel.textContent.trim();
+      }
+
+      const textInput = taskEl.querySelector(".task-text-write");
+      if(!text && textInput)
+      {
+        if("value" in textInput)
+        {
+          text = textInput.value.trim();
+        }
+        else
+        {
+          text = textInput.textContent.trim();
+        }
+      }
+
+      const checkbox = taskEl.querySelector('input[type="checkbox"]');
+      const done =
+        taskEl.classList.contains("done") ||
+        (checkbox ? checkbox.checked : false);
+
+      tasks.push({text, done});
+    });
+    allData.push({title, tasks});
+  });
+  try
+  {
+    const json = JSON.stringify(allData);
+    localStorage.setItem(STORAGE_KEY, json);
+  }
+  catch(err)
+  {
+    console.error("保存に失敗しました。", err);
+  }
+}
+
+
+// 復元機能
+function LoadAll()
+{
+  const json = localStorage.getItem(STORAGE_KEY);
+  if(!json)
+  {
+    return;
+  }
+
+  let data;
+  try
+  {
+    data = JSON.parse(json);
+  }
+  catch(e)
+  {
+    console.error("復元データの読み込みに失敗しました：", e);
+    return;
+  }
+
+  if(!Array.isArray(data))
+  {
+    console.warn("復元データの形式が想定と違います：", data);
+    return;
+  }
+
+  const listArea = document.getElementById("list-area");
+  if(!listArea) return;
+
+  // 一旦全部クリアしてから復元
+  listArea.innerHTML = "";
+
+  data.forEach(listData =>{
+    const title = listData.title || "";
+    const tasks = Array.isArray(listData.tasks) ? listData.tasks : [];
+    //
+    const listEl = ListCreate(title);
+
+    //
+    tasks.forEach(taskData =>{
+      const text = taskData.text || "";
+      const done = !!taskData.done;
+
+      //
+      const taskEl = TaskCreate(listEl, text);
+
+      //
+      if(done)
+      {
+        taskEl.classList.add("done");
+
+        const checkbox = taskEl.querySelector('input[type="checkbox"]');
+        if(checkbox)
+        {
+          checkbox.checked = true;
+        }
+      }
+    }) ;
+
+    //
+    UpdateAchv(listEl);
+  });
+}
+
+// 復元イベント
+window.addEventListener("DOMContentLoaded", () => {
+  isLoading = true;
+  LoadAll();
+  isLoading = false;
+});
